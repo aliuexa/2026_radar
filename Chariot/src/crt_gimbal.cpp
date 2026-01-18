@@ -231,7 +231,7 @@ void Gimbal::yawControl()
 
         case MANUAL_CONTROL:
         case AUTO_CONTROL: { // 手动控制和自动控制都使用同样的闭环控制
-            fp32 fdbData[2] = {GSRLMath::normalizeDeltaAngle(m_yawTargetAngle - m_eulerAngle.z), m_imu->getGyro().z};
+            fp32 fdbData[2] = {m_yawTargetAngle - m_eulerAngle.z, m_imu->getGyro().z};
             m_yawMotor->externalClosedloopControl(0.0f, fdbData, 2);
             break;
         }
@@ -371,8 +371,14 @@ inline void Gimbal::setPitchAngle(const fp32 &targetAngle)
 
 inline void Gimbal::setYawAngle(const fp32 &targetAngle)
 {
+    if (targetAngle > YAW_UPPER_LIMIT)
+        m_yawTargetAngle = YAW_UPPER_LIMIT;
+    else if (targetAngle < YAW_LOWER_LIMIT)
+        m_yawTargetAngle = YAW_LOWER_LIMIT;
+    else
+        m_yawTargetAngle = targetAngle;
     // 借用normalizeDeltaAngle函数将目标角度限制在-PI到PI之间
-    m_yawTargetAngle = GSRLMath::normalizeDeltaAngle(targetAngle);
+    //m_yawTargetAngle = GSRLMath::normalizeDeltaAngle(targetAngle);
 }
 
 inline void Gimbal::convertGimbalTargetSpeedToChassisTargetSpeed()

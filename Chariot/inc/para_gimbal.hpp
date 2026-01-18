@@ -27,14 +27,14 @@
  *                            PID参数
  ******************************************************************************/
 // 云台Yaw电机 (GM6020)
-#define YAW_OUTER_KP                  40.0f    // 40.0f
+#define YAW_OUTER_KP                  7.0f    // 40.0f
 #define YAW_OUTER_KI                  0.0f     // 0.0f
-#define YAW_OUTER_KD                  300.0f   // 300.0f
+#define YAW_OUTER_KD                  0.0f   // 300.0f
 #define YAW_OUTER_OUT_LIMIT           5000.0f  // 5000.0f
 #define YAW_OUTER_IOUT_LIMIT          0.0f     // 0.0f
-#define YAW_INNER_KP                  7000.0f  // 7000.0f
+#define YAW_INNER_KP                  15.0f  // 7000.0f
 #define YAW_INNER_KI                  0.0f     // 0.0f
-#define YAW_INNER_KD                  250.0f   // 250.0f
+#define YAW_INNER_KD                  0.0f   // 250.0f
 #define YAW_INNER_OUT_LIMIT           25000.0f // 25000.0f
 #define YAW_INNER_IOUT_LIMIT          10000.0f // 10000.0f
 #define YAW_INNER_LOWPASS_FILTER_PARA 0.4f     // 0.4f
@@ -101,6 +101,8 @@
  ******************************************************************************/
 #define PITCH_UPPER_LIMIT 0.65f
 #define PITCH_LOWER_LIMIT -0.40f
+#define YAW_UPPER_LIMIT 1.0f
+#define YAW_LOWER_LIMIT -1.0f
 /******************************************************************************
  *                            发射机构参数
  ******************************************************************************/
