@@ -52,42 +52,13 @@ CascadePID::PIDParam pitchInnerParam = {
 };
 LowPassFilter<fp32> pitchInnerLPF(PITCH_INNER_LOWPASS_FILTER_PARA);
 CascadePID pitchPID(pitchOuterParam, pitchInnerParam, nullptr, &pitchInnerLPF);
-// Friction
-SimplePID::PIDParam leftfrictionPIDParam = {
-    FRICTION_KP,        // Kp
-    FRICTION_KI,        // Ki
-    FRICTION_KD,        // Kd
-    FRICTION_OUT_LIMIT, // outputLimit
-    FRICTION_IOUT_LIMIT // intergralLimit
-};
-SimplePID::PIDParam rightfrictionPIDParam = {
-    FRICTION_KP,        // Kp
-    FRICTION_KI,        // Ki
-    FRICTION_KD,        // Kd
-    FRICTION_OUT_LIMIT, // outputLimit
-    FRICTION_IOUT_LIMIT // intergralLimit
-};
 
-SimplePID leftFrictionPID(SimplePID::PID_POSITION, leftfrictionPIDParam);
-SimplePID rightFrictionPID(SimplePID::PID_POSITION, rightfrictionPIDParam);
-// Rammer
-SimplePID::PIDParam rammerPIDParam = {
-    RAMMER_KP,        // Kp
-    RAMMER_KI,        // Ki
-    RAMMER_KD,        // Kd
-    RAMMER_OUT_LIMIT, // outputLimit
-    RAMMER_IOUT_LIMIT // intergralLimit
-};
-SimplePID rammerPID(SimplePID::PID_POSITION, rammerPIDParam);
+MotorDM4310 yawMotor(2, 4, 3.141593f, 10, 5, &yawPID);
+MotorDM4310 pitchMotor(1, 3, 3.141593f, 10, 5, &pitchPID);
 
-/* Motor ---------------------------------------------*/
+Vofa<4> vofa;
 
 
-MotorGM6020 yawMotor(1, &yawPID, 7031);
-MotorDM4310 pitchMotor(1, 0, 3.141593f, 30, 10, &pitchPID);
-MotorM2006 rammerMotor(6, &rammerPID, 0, 36);
-MotorM3508 leftFrictionMotor(4, &leftFrictionPID);
-MotorM3508 rightFrictionMotor(2, &rightFrictionPID);
 
 /******************************************************************************
  *                            IMU相关
@@ -105,7 +76,7 @@ BMI088::CalibrationInfo cali = {
 BMI088 imu(&ahrs, {&hspi1, GPIOA, GPIO_PIN_4}, {&hspi1, GPIOB, GPIO_PIN_0}, cali);
 
 // gimbal
-Gimbal gimbal(&yawMotor, &pitchMotor, &rammerMotor, &leftFrictionMotor, &rightFrictionMotor, &imu);
+Gimbal gimbal(&yawMotor, &pitchMotor, &imu);
 
 /* Variables -----------------------------------------------------------------*/
 
@@ -117,8 +88,16 @@ extern "C" void gimbal_task(void *argument)
 {
     TickType_t taskLastWakeTime = xTaskGetTickCount(); // 获取任务开始时间
     gimbal.init();
+    pitchMotor.setControllerOutputPolarity(true); // 设置Pitch电机控制器输出极性为正（根据实际情况调整）
     while (1) {
-        gimbal.controlLoop();
+        // gimbal.controlLoop();
+        // vofa.writeData(pitchPID.getOuterLoop().pidGetData().output);
+        // vofa.writeData(pitchPID.getInnerLoop().pidGetData().output);
+        // vofa.writeData(pitchMotor.getCurrentAngle());
+        // vofa.writeData(gimbal.m_pitchTargetAngle());
+        // vofa.writeData(yawMotor.getCurrentAngle());
+        // vofa.writeData(gimbal.m_yawTargetAngle());
+        vofa.sendFrame();
         vTaskDelayUntil(&taskLastWakeTime, 1); // 确保任务以定周期1ms运行
     }
 }

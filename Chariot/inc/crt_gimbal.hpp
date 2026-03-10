@@ -17,6 +17,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "GSRL.hpp"
 #include "para_gimbal.hpp"
+#include "dvc_vofa.hpp"
 
 /* Exported types ------------------------------------------------------------*/
 
@@ -30,23 +31,14 @@ public:
         GIMBAL_NO_FORCE = 0,
         CALIBRATION,
         MANUAL_CONTROL,
-        AUTO_CONTROL
-    };
-    // 底盘模式
-    enum ChassisMode : uint8_t {
-        CHASSIS_NO_FORCE = 0,
-        NO_FOLLOW,
-        FOLLOW_GIMBAL,
-        SPINNING
+        AUTO_CONTROL,
+        GIMBAL_LOCK
     };
 
 private:
     // 电机
-    MotorGM6020 *m_yawMotor;
+    MotorDM4310 *m_yawMotor;
     MotorDM4310 *m_pitchMotor;
-    MotorM2006 *m_rammerMotor;
-    MotorM3508 *m_frictionLeftMotor;
-    MotorM3508 *m_frictionRightMotor;
 
     // IMU
     IMU *m_imu;
@@ -57,51 +49,26 @@ private:
     fp32 m_yawTargetAngle;
     fp32 m_pitchTargetAngle;
 
-    // 底盘控制相关量
-    ChassisMode m_chassisMode;
-    Vector3f m_gimbalTargetSpeed;  // 云台坐标系下的目标速度
-    Vector3f m_chassisTargetSpeed; // 底盘坐标系下的目标速度
-
-    // 发射机构相关量
-    bool m_rammerState;   // false: 停止 true: 发射
-    bool m_frictionState; // false: 停止 true: 启动
-    bool m_singleShotState; // 单发状态
-    fp32 m_singleShotTargetRevolutions; // 单发目标转数
-    fp32 m_lastScrollWheel; // 上次滚轮值
-
     // 遥控器
     Dr16RemoteControl m_remoteControl;
 
     // 标志位
     bool m_isInitComplete;
 
-    // 下C板上发裁判系统数据
-    uint8_t m_gameProgress;
-    uint16_t m_leftShooterHeat;
-    // uint16_t m_rightShooterHeat;
-    uint16_t m_currentHP;
-
 public:
-    Gimbal(MotorGM6020 *yawMotor, MotorDM4310 *pitchMotor, MotorM2006 *rammerMotor, MotorM3508 *frictionLeftMotor, MotorM3508 *frictionRightMotor, IMU *imu);
+    Gimbal(MotorDM4310 *yawMotor, MotorDM4310 *pitchMotor, IMU *imu);
     void init();
     void controlLoop();
+    void targetOrientationPlan();
     void imuLoop();
     void receiveGimbalMotorDataFromISR(const can_rx_message_t *rxMessage);
-    void receiveChassisDataFromISR(const can_rx_message_t *rxMessage);
     void receiveRemoteControlDataFromISR(const uint8_t *rxData);
 
 private:
     void modeSelect();
-    void targetOrientationPlan();
-    void targetSpeedPlan();
-    void shootPlan();
     void pitchControl();
     void yawControl();
-    void shootControl();
-    void rammerStuckControl();
-    void chassisControl();
     void transmitGimbalMotorData();
-    void transmitChassisData();
 
     inline void setPitchAngle(const fp32 &targetAngle);
     inline void setYawAngle(const fp32 &targetAngle);

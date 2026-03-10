@@ -4,5 +4,6 @@
         "--query-driver=D:\\Coding\\Envs\\Compiler\\arm-gnu\\bin\\arm-none-eabi-*",
         "--clang-tidy",
         "--pch-storage=memory"
-    ]
+    ],
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }
